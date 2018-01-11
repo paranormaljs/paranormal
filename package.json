@@ -1,0 +1,47 @@
+{
+  "name": "paranormal",
+  "version": "0.0.0",
+  "description": "Phenomenal Code Examples",
+  "main": "index.js",
+  "bin": "cli.js",
+  "repository": "https://github.com/thejameskyle/paranormal",
+  "author": "James Kyle <me@thejameskyle.com>",
+  "license": "MIT",
+  "scripts": {
+    "test": "ava"
+  },
+  "keywords": [
+    "example",
+    "examples",
+    "component",
+    "components",
+    "utils",
+    "ui",
+    "react",
+    "vue",
+    "angular",
+    "ember",
+    "storybook",
+    "storybooks",
+    "website"
+  ],
+  "files": [
+    "cli.js",
+    "index.js",
+    "lib"
+  ],
+  "engines": {
+    "node": ">=8.4.0"
+  },
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "find-up": "^2.1.0",
+    "globby": "^7.1.1",
+    "meow": "^4.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.24.0",
+    "fixturez": "^1.0.1",
+    "flow-bin": "^0.63.1"
+  }
+}
