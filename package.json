@@ -1,6 +1,6 @@
 {
   "name": "paranormal",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Phenomenal Code Examples",
   "main": "index.js",
   "bin": "bin.js",
@@ -34,7 +34,11 @@
     "storybooks",
     "website"
   ],
-  "files": ["bin.js", "index.js", "lib"],
+  "files": [
+    "bin.js",
+    "index.js",
+    "lib"
+  ],
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "chalk": "^2.3.0",
@@ -73,6 +77,9 @@
     "prettier": "^1.10.2"
   },
   "lint-staged": {
-    "*.js": ["prettier --write", "git add"]
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
