@@ -2,12 +2,17 @@
   "env": {
     "test": {
       "presets": [
-        "flow", ["env", {
-          "loose": true,
-          "targets": {
-            "node": "current"
+        "flow",
+        "react",
+        [
+          "env",
+          {
+            "loose": true,
+            "targets": {
+              "node": "current"
+            }
           }
-        }]
+        ]
       ],
       "plugins": [
         "transform-class-properties",
@@ -17,45 +22,45 @@
     },
     "legacy": {
       "presets": [
-        "flow", ["env", {
-          "loose": true,
-          "targets": {
-            "node": 4
+        "flow",
+        "react",
+        [
+          "env",
+          {
+            "loose": true,
+            "targets": {
+              "node": 4
+            }
           }
-        }]
+        ]
       ],
       "plugins": [
         "transform-class-properties",
         "transform-object-rest-spread",
         "transform-runtime"
       ],
-      "ignore": [
-        "__mocks__",
-        "__tests__",
-        "__fixtures__",
-        "node_modules"
-      ]
+      "ignore": ["__mocks__", "__tests__", "__fixtures__", "node_modules"]
     },
     "modern": {
       "presets": [
-        "flow", ["env", {
-          "loose": true,
-          "targets": {
-            "node": 8
+        "flow",
+        "react",
+        [
+          "env",
+          {
+            "loose": true,
+            "targets": {
+              "node": 8
+            }
           }
-        }]
+        ]
       ],
       "plugins": [
         "transform-class-properties",
         "transform-object-rest-spread",
         "transform-runtime"
       ],
-      "ignore": [
-        "__mocks__",
-        "__tests__",
-        "__fixtures__",
-        "node_modules"
-      ]
+      "ignore": ["__mocks__", "__tests__", "__fixtures__", "node_modules"]
     }
   }
 }

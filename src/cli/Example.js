@@ -1,7 +1,9 @@
 // @flow
 import path from 'path';
-import * as constants from './constants';
+import * as constants from './utils/constants';
+import * as fs from './utils/fs';
 import stripIndent from 'strip-indent';
+import resolveFrom from 'resolve-from';
 
 function basename(filePath) {
   return path.basename(filePath, path.extname(filePath));
@@ -27,6 +29,7 @@ export default class Example {
 
   tempDir: string;
   htmlPath: string;
+  txtPath: string;
   jsPath: string;
 
   title: string;
@@ -50,6 +53,7 @@ export default class Example {
 
     this.tempDir = path.join(opts.tempDir, this.dirNameOut);
     this.htmlPath = path.join(this.tempDir, this.baseNameOut + '.html');
+    this.txtPath = path.join(this.tempDir, this.baseNameOut + '.txt');
     this.jsPath = path.join(this.tempDir, this.baseNameOut + '.js');
 
     let currentDirName = path.basename(opts.cwd);
@@ -57,7 +61,12 @@ export default class Example {
 
     this.title = `${currentDirName}/${exampleDirName}/${this.baseNameOut}`;
 
+    let reactImport = resolveFrom(this.filePath, 'react');
+    let reactDomImport = resolveFrom(this.filePath, 'react-dom');
+
     let relativeJsImport = path.relative(this.jsPath, this.filePath);
+    let relativeReactImport = path.relative(this.jsPath, reactImport);
+    let relativeReactDomImport = path.relative(this.jsPath, reactDomImport);
 
     this.htmlContent = stripIndent(`
       <!doctype html>
@@ -74,11 +83,25 @@ export default class Example {
     `).trim();
 
     this.jsContent = stripIndent(`
-      import React from "react";
-      import { render } from "react-dom";
+      import React from "${relativeReactImport}";
+      import { render } from "${relativeReactDomImport}";
       import Example from "${relativeJsImport}";
 
-      render(<Example/>, document.getElementById("root"));
+      render(React.createElement(Example), document.getElementById("root"));
     `).trim();
+  }
+
+  async build() {
+    let fileContents = await fs.readFile(this.filePath);
+    await fs.mkdirp(this.tempDir);
+    await Promise.all([
+      fs.writeFile(this.htmlPath, this.htmlContent),
+      fs.writeFile(this.txtPath, fileContents),
+      fs.writeFile(this.jsPath, this.jsContent),
+    ]);
+  }
+
+  async delete() {
+    await Promise.all([fs.unlink(example.htmlPath), fs.unlink(example.jsPath)]);
   }
 }

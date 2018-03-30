@@ -2,9 +2,15 @@
 import meow from 'meow';
 import path from 'path';
 import chalk from 'chalk';
-import paranormal, { type ParanormalOptions } from './';
+import Runner from './Runner';
 
-function cliToOptions(input, flags): ParanormalOptions {
+type Opts = {
+  cwd: string,
+  match: Array<string>,
+  watch: boolean,
+};
+
+function cliToOptions(input, flags): Opts {
   let match = input;
   let cwd;
 
@@ -49,11 +55,12 @@ export default async function cli(argv: Array<string>) {
     ),
   );
 
-  let opts = cliToOptions(input, flags);
+  let { cwd, match, watch } = cliToOptions(input, flags);
+  let runner = new Runner({ cwd });
 
-  await paranormal(opts);
+  await runner.run({ match, watch });
 
-  if (!opts.watch) {
+  if (!watch) {
     let timing = (Date.now() - start) / 1000;
     let rounded = Math.round(timing * 100) / 100;
 

@@ -1,10 +1,15 @@
 // @flow
 import Watcher from './Watcher';
 import Example from './Example';
-import * as fs from './fs';
-import * as constants from './constants';
+import App from './App';
+import * as fs from './utils/fs';
+import * as constants from './utils/constants';
 import path from 'path';
 import chalk from 'chalk';
+import * as parcel from './utils/parcel';
+import stripIndent from 'strip-indent';
+import debounce from 'lodash.debounce';
+import { type ExamplesData } from '../types';
 
 type Action = {
   kind: 'add' | 'remove' | 'change',
@@ -19,9 +24,11 @@ export default class Runner {
   cwd: string;
   dirName: string;
   tempDir: string;
+  outDir: string;
 
   watcher: Watcher;
   examples: Map<string, Example>;
+  app: App;
   queue: Array<Action>;
 
   updating: boolean;
@@ -32,9 +39,11 @@ export default class Runner {
     this.cwd = opts.cwd;
     this.dirName = path.dirname(this.cwd);
     this.tempDir = fs.tempdir();
+    this.outDir = path.join(this.cwd, 'dist');
 
     this.watcher = new Watcher();
     this.examples = new Map();
+    this.app = new App({ tempDir: this.tempDir });
     this.queue = [];
 
     this.updating = false;
@@ -51,10 +60,10 @@ export default class Runner {
       this.watcher.watch(this.cwd);
     }
 
-    let examplePaths = await fs.findGlobPatterns(this.cwd, [
-      constants.DEFAULT_EXAMPLES_GLOB,
-      constants.IGNORE_NODE_MODULES_GLOB,
-    ]);
+    let examplePaths = await fs.findGlobPatterns(
+      this.cwd,
+      this.getExampleGlobPatterns(),
+    );
 
     await Promise.all(
       examplePaths.map(async examplePath => {
@@ -62,8 +71,16 @@ export default class Runner {
       }),
     );
 
+    await this.app.build(Array.from(this.examples.values()));
+
     this.ready = true;
-    this.update();
+
+    if (opts.watch) {
+      await this.update();
+      await parcel.serve(this.app.indexPath, path.join(this.cwd, 'dist'));
+    } else {
+      await parcel.build(this.app.indexPath, path.join(this.cwd, 'dist'));
+    }
   }
 
   async addExample(examplePath: string) {
@@ -79,12 +96,7 @@ export default class Runner {
       console.log(chalk.cyan(`Example: "${example.title}"`));
     }
 
-    await fs.mkdirp(example.tempDir);
-    await Promise.all([
-      fs.writeFile(example.htmlPath, example.htmlContent),
-      fs.writeFile(example.jsPath, example.jsContent),
-    ]);
-
+    await example.build();
     this.examples.set(examplePath, example);
   }
 
@@ -94,8 +106,7 @@ export default class Runner {
     console.log(chalk.red(`Example: "${example.title}" (removed)`));
 
     this.examples.delete(examplePath);
-    await fs.unlink(example.htmlPath);
-    await fs.unlink(example.jsPath);
+    await example.delete();
   }
 
   async changeExample(examplePath: string) {
@@ -104,11 +115,7 @@ export default class Runner {
     console.log(chalk.cyan(`Example: "${example.title}" (changed)`));
   }
 
-  async updateIndex() {
-    // ...
-  }
-
-  async update() {
+  update = debounce(async () => {
     if (!this.ready || this.updating || !this.queue.length) {
       return;
     }
@@ -126,13 +133,13 @@ export default class Runner {
       }
     }
 
-    await this.updateIndex();
+    await this.app.build(Array.from(this.examples.values()));
     this.updating = false;
 
     if (this.queue.length) {
       await this.update();
     }
-  }
+  }, 0);
 
   onAdd = (filePath: string) => {
     if (this.matches(filePath)) {
@@ -156,9 +163,19 @@ export default class Runner {
   };
 
   matches(filePath: string) {
-    return fs.matchesGlobPatterns(filePath, [
+    return fs.matchesGlobPatterns(
+      this.cwd,
+      filePath,
+      this.getExampleGlobPatterns(),
+    );
+  }
+
+  getExampleGlobPatterns() {
+    return [
       constants.DEFAULT_EXAMPLES_GLOB,
       constants.IGNORE_NODE_MODULES_GLOB,
-    ]);
+      `!${path.relative(this.cwd, this.outDir)}/**`,
+      `!.cache/**`,
+    ];
   }
 }

@@ -1,6 +1,6 @@
 // @flow
 import EventEmitter from 'events';
-import * as fs from './fs';
+import * as fs from './utils/fs';
 
 export default class Watcher extends EventEmitter {
   watch(dirPath: string) {

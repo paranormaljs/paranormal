@@ -2,11 +2,13 @@
 import promisify from 'typeable-promisify';
 import fs, { type FSWatcher } from 'fs';
 import _mkdirp from 'mkdirp';
+import _rimraf from 'rimraf';
 import tempy from 'tempy';
 import globby from 'globby';
 import micromatch from 'micromatch';
 import path from 'path';
 import chokidar from 'chokidar';
+import onExit from 'signal-exit';
 
 export function readFile(filePath: string) {
   return promisify(cb => fs.readFile(filePath, cb));
@@ -36,17 +38,35 @@ export function mkdirp(dirPath: string) {
   return promisify(cb => _mkdirp(dirPath, cb));
 }
 
-export function tempdir() {
-  return tempy.directory();
+export function rimraf(dirPath: string) {
+  return promisify(cb => _rimraf(dirPath, cb));
 }
+
+let TEMP_DIRECTORIES = [];
+
+export function tempdir() {
+  let dirPath = tempy.directory();
+  TEMP_DIRECTORIES.push(dirPath);
+  return dirPath;
+}
+
+onExit(async () => {
+  for (let dirPath of TEMP_DIRECTORIES) {
+    await rimraf(dirPath);
+  }
+});
 
 export async function findGlobPatterns(cwd: string, patterns: Array<string>) {
   let matches = await globby(patterns, { cwd });
   return matches.map(match => path.join(cwd, match));
 }
 
-export function matchesGlobPatterns(filePath: string, patterns: Array<string>) {
-  return micromatch.every(filePath, patterns);
+export function matchesGlobPatterns(
+  cwd: string,
+  filePath: string,
+  patterns: Array<string>,
+) {
+  return micromatch.every(path.relative(cwd, filePath), patterns);
 }
 
 export function watchDirectory(dirPath: string): FSWatcher {

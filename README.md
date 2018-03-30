@@ -2,9 +2,10 @@
 
 > Phenomenal Code Examples
 
-## Getting Started
+## Install
 
 ```sh
 yarn add --dev paranormal
-yarn paranormal
 ```
+
+## Usage
