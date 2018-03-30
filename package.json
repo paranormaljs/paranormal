@@ -1,6 +1,6 @@
 {
   "name": "paranormal",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Phenomenal Code Examples",
   "main": "index.js",
   "bin": "bin.js",
