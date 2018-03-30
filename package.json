@@ -45,6 +45,7 @@
     "chokidar": "^2.0.2",
     "find-up": "^2.1.0",
     "globby": "^8.0.1",
+    "lodash.debounce": "^4.0.8",
     "meow": "^4.0.0",
     "micromatch": "^3.1.10",
     "parcel-bundler": "^1.7.0",
