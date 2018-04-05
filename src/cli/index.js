@@ -6,6 +6,7 @@ import Runner from './Runner';
 
 type Opts = {
   cwd: string,
+  outDir: string,
   match: Array<string>,
   watch: boolean,
 };
@@ -22,6 +23,15 @@ function cliToOptions(input, flags): Opts {
     throw new Error(`The flag \`--cwd=<path>\` requires a path`);
   }
 
+  let outDir;
+  if (typeof flags.outDir === 'undefined') {
+    outDir = path.resolve(process.cwd(), 'dist');
+  } else if (typeof flags.outDir === 'string') {
+    outDir = path.resolve(process.cwd(), flags.outDir);
+  } else {
+    throw new Error(`The flag \`--outDir=<path>\` requires a path`);
+  }
+
   let watch;
   if (typeof flags.watch === 'undefined') {
     watch = false;
@@ -31,7 +41,7 @@ function cliToOptions(input, flags): Opts {
     throw new Error(`The flag \`--watch/-w\` does not accept an argument`);
   }
 
-  return { match, cwd, watch };
+  return { match, cwd, outDir, watch };
 }
 
 export default async function cli(argv: Array<string>) {
@@ -44,8 +54,9 @@ export default async function cli(argv: Array<string>) {
         $ paranormal <...globs> <...flags>
 
       Flags
-        --watch, -w   Watch files and update on changes
-        --cwd <dir>   Set the current working directory
+        --watch, -w      Watch files and update on changes
+        --cwd <dir>      Set the current working directory
+        --outDir <dir>   Directory for output structure
     `,
   });
 
@@ -55,8 +66,8 @@ export default async function cli(argv: Array<string>) {
     ),
   );
 
-  let { cwd, match, watch } = cliToOptions(input, flags);
-  let runner = new Runner({ cwd });
+  let { cwd, outDir, match, watch } = cliToOptions(input, flags);
+  let runner = new Runner({ cwd, outDir });
 
   await runner.run({ match, watch });
 
