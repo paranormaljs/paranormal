@@ -56,7 +56,7 @@ export default async function cli(argv: Array<string>) {
       Flags
         --watch, -w      Watch files and update on changes
         --cwd <dir>      Set the current working directory
-        --outDir <dir>   Directory for output structure
+        --out-dir <dir>   Directory for output structure
     `,
   });
 
