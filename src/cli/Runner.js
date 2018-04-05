@@ -18,6 +18,7 @@ type Action = {
 
 type RunnerOpts = {
   cwd: string,
+  outDir: string,
 };
 
 export default class Runner {
@@ -39,7 +40,7 @@ export default class Runner {
     this.cwd = opts.cwd;
     this.dirName = path.dirname(this.cwd);
     this.tempDir = fs.tempdir();
-    this.outDir = path.join(this.cwd, 'dist');
+    this.outDir = opts.outDir;
 
     this.watcher = new Watcher();
     this.examples = new Map();
@@ -77,9 +78,9 @@ export default class Runner {
 
     if (opts.watch) {
       await this.update();
-      await parcel.serve(this.app.indexPath, path.join(this.cwd, 'dist'));
+      await parcel.serve(this.app.indexPath, this.outDir);
     } else {
-      await parcel.build(this.app.indexPath, path.join(this.cwd, 'dist'));
+      await parcel.build(this.app.indexPath, this.outDir);
     }
   }
 
